@@ -1,0 +1,24 @@
+module.exports = {
+  extends: ["@commitlint/config-conventional"],
+  rules: {
+    "scope-enum": [
+      2,
+      "always",
+      [
+        "wallet",
+        "auth",
+        "home",
+        "board",
+        "detail",
+        "dashboard",
+        "me",
+        "wizard",
+        "ui",
+        "layout",
+        "repo",
+        "ci",
+        "deps",
+      ],
+    ],
+  },
+};
