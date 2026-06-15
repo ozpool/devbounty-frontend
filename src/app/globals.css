@@ -1,0 +1,185 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Design tokens. Dark is the primary, polished theme (default on <html class="dark">);
+  light is a clean professional fallback. Brand: emerald = bounty / money,
+  violet = web3 / identity.
+*/
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 6%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 6%;
+
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 42%;
+
+    --accent: 240 5% 94%;
+    --accent-foreground: 240 10% 10%;
+
+    /* Muted, professional brand/semantic colors. Kept dark enough in light mode
+       to clear 4.5:1 for small text on tinted backgrounds. */
+    --primary: 162 44% 30%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 250 30% 44%;
+    --secondary-foreground: 0 0% 100%;
+
+    --success: 152 38% 30%;
+    --warning: 32 55% 34%;
+    --danger: 4 55% 46%;
+
+    --border: 240 6% 89%;
+    --input: 240 6% 89%;
+    --ring: 162 44% 30%;
+
+    --radius: 0.85rem;
+  }
+
+  .dark {
+    --background: 240 8% 6%;
+    --foreground: 0 0% 95%;
+
+    --card: 240 7% 9%;
+    --card-foreground: 0 0% 95%;
+
+    --muted: 240 6% 14%;
+    --muted-foreground: 240 5% 62%;
+
+    --accent: 240 6% 16%;
+    --accent-foreground: 0 0% 95%;
+
+    --primary: 158 46% 52%;
+    --primary-foreground: 158 35% 9%;
+
+    --secondary: 250 40% 70%;
+    --secondary-foreground: 250 35% 10%;
+
+    --success: 152 40% 52%;
+    --warning: 36 60% 58%;
+    --danger: 4 58% 62%;
+
+    --border: 240 6% 16%;
+    --input: 240 6% 18%;
+    --ring: 158 46% 52%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.25);
+  }
+
+  /* Custom scrollbar — subtle, on-brand. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 9999px;
+    border: 2px solid hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+}
+
+@layer components {
+  /* Gradient headline text. */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      110deg,
+      hsl(var(--foreground)),
+      hsl(var(--primary)),
+      hsl(var(--secondary)),
+      hsl(var(--foreground))
+    );
+    background-size: 200% auto;
+    @apply animate-gradient-pan;
+  }
+
+  /* Frosted glass surface. */
+  .glass {
+    @apply border border-border/60 bg-card/60 backdrop-blur-xl;
+  }
+
+  /* Thin gradient hairline border via mask. */
+  .ring-gradient {
+    position: relative;
+  }
+  .ring-gradient::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      140deg,
+      hsl(var(--primary) / 0.6),
+      transparent 40%,
+      transparent 60%,
+      hsl(var(--secondary) / 0.6)
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+@layer utilities {
+  .bg-grid {
+    background-size: 44px 44px;
+    @apply bg-grid-faint;
+  }
+  .mask-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent);
+    mask-image: linear-gradient(to bottom, black 60%, transparent);
+  }
+  /* Shimmer overlay for skeletons. */
+  .shimmer::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full animate-shimmer;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--foreground) / 0.06),
+      transparent
+    );
+  }
+}
+
+/* Honor reduced-motion for the raw CSS keyframe animations. (Framer Motion is
+   already covered by MotionConfig reducedMotion="user" in providers.) */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-gradient-pan,
+  .animate-float,
+  .animate-glow-pulse,
+  .animate-shimmer,
+  .animate-marquee {
+    animation: none !important;
+  }
+}
