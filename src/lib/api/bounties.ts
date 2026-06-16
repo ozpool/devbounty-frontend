@@ -62,4 +62,12 @@ export const bountiesApi = {
       `/bounties/${bountyId}/refund-recorded`,
       { method: "POST", body: { txHash } },
     ),
+
+  /** Tell the backend the funding tx landed so the bounty leaves
+   *  pending_deposit immediately (the indexer is still the canonical source). */
+  depositRecorded: (bountyId: string, txHash: string) =>
+    apiFetch<{ bountyId: string; status: string }>(
+      `/bounties/${bountyId}/deposit-recorded`,
+      { method: "POST", body: { txHash } },
+    ),
 };

@@ -120,9 +120,18 @@ export function CreateWizard() {
         amountUsdc: draft.amount,
         language: draft.language,
       });
-      await fund(created.bountyId as `0x${string}`, draft.amount);
+      const txHash = await fund(created.bountyId as `0x${string}`, draft.amount);
       localStorage.removeItem(DRAFT_KEY);
-      toast.success("Bounty funded", "Your USDC is locked in escrow.");
+      // Fast-path the bounty onto the board and persist the funding tx hash so
+      // the detail page can link it. The indexer stays canonical, so a failure
+      // here is non-fatal — it converges on its own.
+      await bountiesApi
+        .depositRecorded(created.bountyId, txHash)
+        .catch(() => undefined);
+      toast.success(
+        "Bounty funded",
+        `USDC locked in escrow · tx ${txHash.slice(0, 10)}…`,
+      );
       router.push(`/bounties/${created.bountyId}`);
     } catch (e) {
       // Funding failed or was dismissed, so no USDC was escrowed. Discard the
