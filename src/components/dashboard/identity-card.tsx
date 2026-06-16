@@ -34,7 +34,17 @@ export function IdentityCard({ me }: { me: Me }) {
             <GithubUnlinkButton />
           </div>
         ) : (
-          <GithubLinkButton size="sm" />
+          <div className="flex flex-col items-end gap-1">
+            <GithubLinkButton size="sm" />
+            <a
+              href="https://github.com/logout"
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+            >
+              Wrong account? Sign out of GitHub
+            </a>
+          </div>
         )}
       </div>
     </div>
