@@ -23,4 +23,9 @@ export const authApi = {
 
   /** Full-page redirect into the GitHub OAuth linking flow. */
   githubStartUrl: () => `${env.apiBaseUrl}/auth/github/start`,
+
+  /** Unlink the GitHub account from the current wallet. In-flight claims are
+   *  unaffected (they snapshot the GitHub identity at submit time). */
+  unlinkGithub: () =>
+    apiFetch<{ unlinked: boolean }>("/auth/github/link", { method: "DELETE" }),
 };
