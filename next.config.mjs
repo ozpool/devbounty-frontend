@@ -35,6 +35,20 @@ const nextConfig = {
       },
     },
   },
+  // `next build` uses Webpack (the turbo alias above only applies to `next dev
+  // --turbo`), so silence the same optional-dependency warnings here. Both are
+  // pulled in transitively by the wallet stack but only used in environments we
+  // don't target: `async-storage` is React Native's store (MetaMask SDK) and
+  // `pino-pretty` is a dev-only log formatter (WalletConnect's pino logger).
+  // Aliasing to `false` resolves each to an empty module.
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@react-native-async-storage/async-storage": false,
+      "pino-pretty": false,
+    };
+    return config;
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
