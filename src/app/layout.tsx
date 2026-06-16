@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { headers } from "next/headers";
 import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
@@ -8,6 +9,7 @@ import { Footer } from "@/components/layout/footer";
 import { AmbientBackground } from "@/components/layout/ambient-background";
 import { WrongNetworkBanner } from "@/components/wallet/wrong-network-banner";
 import { Toaster } from "@/components/ui/toast";
+import { GithubLinkToast } from "@/components/auth/github-link-toast";
 import { DemoBadge } from "@/components/demo-badge";
 import { env } from "@/lib/env";
 import { cn } from "@/lib/utils";
@@ -69,6 +71,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="min-h-[calc(100vh-4rem)]">{children}</main>
           <Footer />
           <Toaster />
+          <Suspense fallback={null}>
+            <GithubLinkToast />
+          </Suspense>
           {env.demoMode && <DemoBadge />}
         </Providers>
       </body>
