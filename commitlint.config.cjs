@@ -6,7 +6,9 @@ module.exports = {
       "always",
       [
         "wallet",
+        "escrow",
         "auth",
+        "security",
         "home",
         "board",
         "detail",
@@ -16,6 +18,7 @@ module.exports = {
         "ui",
         "layout",
         "repo",
+        "build",
         "ci",
         "deps",
       ],
