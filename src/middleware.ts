@@ -31,9 +31,15 @@ const connectSrc = [
 
 export function middleware(request: NextRequest) {
   const nonce = btoa(crypto.randomUUID());
+  // Dev (Turbopack) does not stamp the nonce onto every async vendor chunk, so a
+  // nonce-based script-src silently blocks wagmi/rainbowkit/react-query and the
+  // app renders blank. In dev fall back to host-allowlisting; prod stays strict.
+  const scriptSrc = isDev
+    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+    : `script-src 'self' 'nonce-${nonce}'`;
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'${isDev ? " 'unsafe-eval'" : ""}`,
+    scriptSrc,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
     "font-src 'self' data:",
