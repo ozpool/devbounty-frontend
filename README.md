@@ -1,90 +1,131 @@
-# DevBounty — Web
+<div align="center">
 
-The Next.js frontend for DevBounty: a decentralized bug-bounty platform where
-sponsors fund USDC bounties in non-custodial escrow on Arbitrum and hunters get
-paid automatically when a maintainer merges their fix.
+# DevBounty — Frontend
 
-This app is read-and-act UI only. It never holds funds or decides payouts — it
-reads the chain, talks to the API, and prompts the wallet for signatures.
+**The web app for a decentralized bug-bounty platform.**
+Connect a wallet, fund bounties in USDC, get paid automatically when your fix is merged.
 
-## Stack
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-14-000?style=flat-square&logo=nextdotjs)](.)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)](.)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](.)
+[![wagmi](https://img.shields.io/badge/wagmi-v2-1C1B1B?style=flat-square)](.)
+[![Tailwind](https://img.shields.io/badge/Tailwind-CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](.)
+[![Tests](https://img.shields.io/badge/tests-28%20passing-0fa56a?style=flat-square)](#testing)
+[![Status](https://img.shields.io/badge/status-testnet-blueviolet?style=flat-square)](#status)
 
-- Next.js 14 (App Router) · TypeScript
-- Tailwind CSS · custom design system · Framer Motion
-- wagmi v2 · viem · RainbowKit (wallet) · SIWE (auth)
-- TanStack Query (data) · Zustand (session/theme)
+</div>
 
-## Quickstart
+---
 
-This repo uses **pnpm** (pinned via `packageManager` in `package.json`); enable it
-with `corepack enable` if you don't have it.
+## What it is
 
-```bash
-pnpm install
-cp .env.example .env.local   # fill in the values below
-pnpm dev                     # http://localhost:3000
-```
+DevBounty lets a project owner put real money behind a bug report without trusting a middleman.
+A sponsor funds a bounty in **USDC** held by an on-chain escrow; a hunter fixes the issue and opens
+a pull request; when a maintainer merges it, the escrow releases the funds on-chain.
 
-The API is expected at `http://localhost:4000` by default (cookie auth, so the
-browser sends the session cookie automatically).
+This repository is the **frontend** — the interface sponsors and hunters use to connect a wallet,
+browse and fund bounties, claim work, and track payouts and reputation. It is read-and-act UI only:
+it never holds funds or decides payouts. It reads the chain, talks to the backend API, and prompts
+the wallet to sign. The API and the smart contract live in a separate repository.
 
-## Scripts
+---
 
-| Script           | Does                          |
-| ---------------- | ----------------------------- |
-| `pnpm dev`       | Dev server with HMR           |
-| `pnpm build`     | Production build              |
-| `pnpm start`     | Serve the production build    |
-| `pnpm lint`      | ESLint (next/core-web-vitals) |
-| `pnpm typecheck` | `tsc --noEmit`                |
-| `pnpm test`      | Vitest (jsdom + RTL)          |
-| `pnpm format`    | Prettier write                |
+## Capabilities
 
-## Environment
+- **Wallet identity.** Connect a wallet and sign in with Ethereum (SIWE), then link a GitHub
+  account — both required before claiming, with session state kept in a httpOnly cookie.
+- **Browse & fund.** A filterable, paginated bounty board, and a guided wizard to create a bounty
+  and fund it with an on-chain USDC `approve` + escrow `create`.
+- **Claim to payout.** Claim a bounty, attach a pull request, and follow its status through to a
+  confirmed on-chain payout, including a maintainer panel for the repo owner.
+- **Reputation.** Public hunter profiles and a global earnings leaderboard sourced from the API.
+- **Self-custodial by design.** The app holds no secrets and no funds; every money action is a
+  wallet-signed transaction the user approves, and on-chain actions activate only once the escrow
+  address is configured.
+- **Demo mode.** An offline fixture mode renders the full UI with no backend or wallet, for quick
+  previews.
 
-All client config is `NEXT_PUBLIC_*` (exposed to the browser — no secrets):
-
-| Variable                               | Purpose                                |
-| -------------------------------------- | -------------------------------------- |
-| `NEXT_PUBLIC_API_BASE_URL`             | Backend API origin                     |
-| `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | WalletConnect Cloud id                 |
-| `NEXT_PUBLIC_CHAIN_ID`                 | `421614` (Arbitrum Sepolia)            |
-| `NEXT_PUBLIC_RPC_URL`                  | Arbitrum Sepolia RPC endpoint          |
-| `NEXT_PUBLIC_USDC_ADDRESS`             | USDC token address                     |
-| `NEXT_PUBLIC_ESCROW_ADDRESS`           | Escrow contract (empty until deployed) |
-| `NEXT_PUBLIC_GITHUB_CLIENT_ID`         | GitHub OAuth client id (linking)       |
-| `NEXT_PUBLIC_DEMO_MODE`                | `true` serves demo fixtures offline    |
-| `NEXT_PUBLIC_SENTRY_DSN`               | Sentry DSN (optional)                  |
-
-## Structure
-
-```
-src/
-  app/            routes (App Router)
-  components/     ui primitives, layout chrome, feature components
-  hooks/          TanStack Query + wallet hooks
-  lib/            api client, wagmi/chain config, types, utils
-  store/          Zustand stores (session, theme)
-```
-
-## Deploy (Vercel)
-
-1. Push to GitHub and import the repo in Vercel (it auto-detects Next.js).
-2. Set the `NEXT_PUBLIC_*` env vars above in the Vercel project (Production +
-   Preview). Leave `NEXT_PUBLIC_ESCROW_ADDRESS` blank until the contract ships —
-   the funding flow stays disabled while it's empty.
-3. On the backend, allow the Vercel origin in CORS and set the session cookie to
-   `SameSite=None; Secure` (auth is cross-site in production).
-4. Security headers + CSP ship from `next.config.mjs`; no extra Vercel config
-   needed.
-
-CI gates to run before deploy: `pnpm lint`, `pnpm typecheck`, `pnpm test`,
-`pnpm build`.
+---
 
 ## Status
 
-Auth, the bounty board and detail, leaderboard, public profiles, and the
-dashboards are built against the API and covered by unit tests. The on-chain
-actions (USDC `approve`, escrow `create`/`refund`) are fully wired and gated on
-`NEXT_PUBLIC_ESCROW_ADDRESS` — they activate automatically once the
-`BountyEscrow` contract is deployed and its address is configured.
+| Capability | State | What it needs |
+|---|---|---|
+| UI (board, detail, create, profiles, leaderboard, dashboard) | Built · 28 tests green | — |
+| Wallet login (SIWE) + GitHub linking | Built against the API | — |
+| On-chain funding (USDC approve + escrow create) | Wired, gated on the escrow address | escrow deployed + address set |
+| Hosted on the internet | Not deployed yet | Vercel deploy + env |
+| Real money | Test USDC only | mainnet escrow + audit |
+
+---
+
+## Tech stack
+
+| Layer | Stack |
+|---|---|
+| Framework | Next.js 14 (App Router) · React · TypeScript |
+| UI | Tailwind CSS · Framer Motion · custom design system |
+| Wallet / chain | wagmi v2 · viem · RainbowKit · SIWE (auth) |
+| Data / state | TanStack Query · Zustand |
+| Target chain | Arbitrum Sepolia (testnet) |
+| Tests | Vitest · React Testing Library (jsdom) |
+
+The backend (Express, MongoDB) and the escrow contract (Solidity, Hardhat) live in a separate
+repository.
+
+---
+
+## Architecture
+
+```mermaid
+flowchart LR
+    U["User wallet<br/>MetaMask · SIWE"]
+    FE["Frontend<br/>Next.js · Vercel"]
+    API["Backend API<br/>(separate repo)"]
+    Ch["Arbitrum Sepolia<br/>BountyEscrow (USDC)"]
+
+    U -- "sign" --> FE
+    FE -- "HTTPS / JSON (cookie auth)" --> API
+    FE -- "wallet tx: approve / create" --> Ch
+    Ch -- "status reads" --> FE
+
+    classDef chain fill:#fef2f2,stroke:#d63044,color:#7f1d1d
+    classDef svc fill:#fffbeb,stroke:#d97706,color:#78350f
+    classDef user fill:#faf5ff,stroke:#7c3aed,color:#4c1d95
+    class Ch chain
+    class FE,API svc
+    class U user
+```
+
+The frontend reads bounty data from the API and reads or writes the chain through the user's
+wallet. It carries no secrets — all client config is `NEXT_PUBLIC_*`.
+
+---
+
+## Getting Started
+
+Uses **pnpm** (enable with `corepack enable`).
+
+```bash
+pnpm install
+cp .env.example .env.local   # fill in the NEXT_PUBLIC_* values
+pnpm dev                     # http://localhost:3000
+```
+
+The API is expected at `http://localhost:4000` by default (cookie auth, sent automatically).
+
+## Testing
+
+```bash
+pnpm typecheck
+pnpm lint
+pnpm test       # 28 tests (Vitest + React Testing Library)
+pnpm build
+```
+
+---
+
+## License
+
+[MIT](LICENSE) © 2026 ozpool
