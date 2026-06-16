@@ -4,6 +4,7 @@ import * as React from "react";
 import { BaseError, parseUnits, UserRejectedRequestError } from "viem";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
 import { escrowContract, usdcContract, USDC_DECIMALS } from "@/lib/contracts";
+import { clampFees } from "@/lib/fees";
 
 export type FundStep = "idle" | "approving" | "creating" | "done";
 
@@ -57,11 +58,14 @@ export function useFundBounty() {
             account: address,
           }),
         );
+        // Fresh market fees per send (the base fee can move during the approve
+        // wait), clamped to a floor so the tx never underpays and stalls/fails.
         const approveHash = await writeContractAsync({
           ...usdcContract,
           functionName: "approve",
           args: [escrowContract.address, amount],
           gas: approveGas,
+          ...clampFees(await client.estimateFeesPerGas()),
         });
         await client.waitForTransactionReceipt({ hash: approveHash });
       }
@@ -82,6 +86,7 @@ export function useFundBounty() {
         functionName: "create",
         args: [bountyId, amount],
         gas: createGas,
+        ...clampFees(await client.estimateFeesPerGas()),
       });
       await client.waitForTransactionReceipt({ hash: createHash });
 
@@ -121,6 +126,7 @@ export function useRefundBounty() {
         functionName: "refund",
         args: [bountyId],
         gas: refundGas,
+        ...clampFees(await client.estimateFeesPerGas()),
       });
       await client.waitForTransactionReceipt({ hash });
       return hash;
