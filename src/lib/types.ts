@@ -36,6 +36,9 @@ export interface Bounty {
   lifecycleStatus: LifecycleStatus;
   refundWindowSnapshot: number;
   hunterAddress?: string;
+  txCreate?: string | null;
+  txRelease?: string | null;
+  txRefund?: string | null;
   createdAt?: string;
 }
 

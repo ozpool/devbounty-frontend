@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, Clock, ShieldCheck, User } from "lucide-react";
+import { ArrowLeft, ExternalLink, Clock, ShieldCheck, User, Receipt } from "lucide-react";
 import { StatusBadge } from "@/components/bounty/status-badge";
 import { ClaimsList } from "@/components/bounty/claims-list";
 import { ClaimActions } from "@/components/bounty/claim-actions";
@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/common/empty-state";
 import { AddressAvatar } from "@/components/wallet/address-avatar";
 import { useBounty } from "@/hooks/use-bounties";
 import { ApiError } from "@/lib/api";
-import { explorerAddressUrl } from "@/lib/chains";
+import { explorerAddressUrl, explorerTxUrl } from "@/lib/chains";
 import { formatUsdc, safeHref, shortAddress, timeAgo } from "@/lib/utils";
 
 function MetaRow({
@@ -125,6 +125,25 @@ export default function BountyDetailPage({ params }: { params: { id: string } })
                     {timeAgo(b.createdAt)}
                   </MetaRow>
                 )}
+                {[
+                  { label: "Funding tx", hash: b.txCreate },
+                  { label: "Payout tx", hash: b.txRelease },
+                  { label: "Refund tx", hash: b.txRefund },
+                ]
+                  .flatMap((t) => (t.hash ? [{ label: t.label, hash: t.hash }] : []))
+                  .map((t) => (
+                    <MetaRow key={t.label} icon={Receipt} label={t.label}>
+                      <a
+                        href={explorerTxUrl(t.hash)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 font-mono hover:text-primary"
+                      >
+                        {t.hash.slice(0, 10)}…
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </MetaRow>
+                  ))}
               </div>
             </div>
 

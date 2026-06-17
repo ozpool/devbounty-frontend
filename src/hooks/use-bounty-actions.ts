@@ -6,7 +6,13 @@ import { bountiesApi } from "@/lib/api";
 /** Claim / release / submit mutations that refresh the bounty detail on success. */
 export function useBountyActions(bountyId: string) {
   const qc = useQueryClient();
-  const invalidate = () => qc.invalidateQueries({ queryKey: ["bounty", bountyId] });
+  // Refresh the bounty, the board, and the viewer's identity/claims so a claim
+  // or submission shows everywhere at once without a manual refresh.
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["bounty", bountyId] });
+    qc.invalidateQueries({ queryKey: ["bounties"] });
+    qc.invalidateQueries({ queryKey: ["me"] });
+  };
 
   const claim = useMutation({
     mutationFn: () => bountiesApi.claim(bountyId),
@@ -17,7 +23,8 @@ export function useBountyActions(bountyId: string) {
     onSuccess: invalidate,
   });
   const submitPr = useMutation({
-    mutationFn: (prUrl: string) => bountiesApi.submitPr(bountyId, prUrl),
+    mutationFn: (vars: { prUrl: string; confirmMismatch?: boolean }) =>
+      bountiesApi.submitPr(bountyId, vars.prUrl, vars.confirmMismatch),
     onSuccess: invalidate,
   });
 

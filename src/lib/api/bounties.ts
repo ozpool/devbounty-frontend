@@ -46,11 +46,21 @@ export const bountiesApi = {
       method: "DELETE",
     }),
 
-  submitPr: (bountyId: string, prUrl: string) =>
-    apiFetch<{ bountyId: string; prUrl: string; prNumber: number }>(
-      `/bounties/${bountyId}/submit`,
-      { method: "POST", body: { prUrl } },
-    ),
+  // Returns the submitted claim, or `{ warning: "issue_mismatch" }` when the PR
+  // is for a different issue than the bounty. Re-send with confirmMismatch: true
+  // to proceed past that warning.
+  submitPr: (bountyId: string, prUrl: string, confirmMismatch = false) =>
+    apiFetch<{
+      bountyId?: string;
+      prUrl?: string;
+      prNumber?: number;
+      status?: string;
+      warning?: "issue_mismatch";
+      expectedIssue?: number;
+    }>(`/bounties/${bountyId}/submit`, {
+      method: "POST",
+      body: { prUrl, confirmMismatch },
+    }),
 
   refundEligibility: (bountyId: string) =>
     apiFetch<{ eligible: boolean; reason: string; windowExpiresAt?: string }>(
@@ -60,6 +70,14 @@ export const bountiesApi = {
   refundRecorded: (bountyId: string, txHash: string) =>
     apiFetch<{ bountyId: string; status: string }>(
       `/bounties/${bountyId}/refund-recorded`,
+      { method: "POST", body: { txHash } },
+    ),
+
+  /** Tell the backend the funding tx landed so the bounty leaves
+   *  pending_deposit immediately (the indexer is still the canonical source). */
+  depositRecorded: (bountyId: string, txHash: string) =>
+    apiFetch<{ bountyId: string; status: string }>(
+      `/bounties/${bountyId}/deposit-recorded`,
       { method: "POST", body: { txHash } },
     ),
 };
