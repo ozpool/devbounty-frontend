@@ -46,11 +46,21 @@ export const bountiesApi = {
       method: "DELETE",
     }),
 
-  submitPr: (bountyId: string, prUrl: string) =>
-    apiFetch<{ bountyId: string; prUrl: string; prNumber: number }>(
-      `/bounties/${bountyId}/submit`,
-      { method: "POST", body: { prUrl } },
-    ),
+  // Returns the submitted claim, or `{ warning: "issue_mismatch" }` when the PR
+  // is for a different issue than the bounty. Re-send with confirmMismatch: true
+  // to proceed past that warning.
+  submitPr: (bountyId: string, prUrl: string, confirmMismatch = false) =>
+    apiFetch<{
+      bountyId?: string;
+      prUrl?: string;
+      prNumber?: number;
+      status?: string;
+      warning?: "issue_mismatch";
+      expectedIssue?: number;
+    }>(`/bounties/${bountyId}/submit`, {
+      method: "POST",
+      body: { prUrl, confirmMismatch },
+    }),
 
   refundEligibility: (bountyId: string) =>
     apiFetch<{ eligible: boolean; reason: string; windowExpiresAt?: string }>(

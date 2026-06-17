@@ -38,6 +38,24 @@ export function ClaimActions({ bounty }: { bounty: BountyDetail }) {
   const toast = useToast();
   const { claim, releaseClaim, submitPr } = useBountyActions(bounty.bountyId);
   const [prUrl, setPrUrl] = React.useState("");
+  // The bounty issue number when the backend warns the PR is for a different one.
+  const [mismatch, setMismatch] = React.useState<number | null>(null);
+
+  const doSubmit = (confirmMismatch: boolean) =>
+    submitPr.mutate(
+      { prUrl, confirmMismatch },
+      {
+        onSuccess: (res) => {
+          if (res.warning === "issue_mismatch") {
+            setMismatch(res.expectedIssue ?? 0);
+            return;
+          }
+          setMismatch(null);
+          toast.success("Pull request submitted", "Escrow releases when it's merged.");
+        },
+        onError: (e) => toast.error("Couldn't submit", errMsg(e)),
+      },
+    );
 
   const lower = (s?: string) => (s ?? "").toLowerCase();
   const mine = bounty.claims.find((c) => lower(c.hunterAddress) === lower(me?.address));
@@ -102,16 +120,7 @@ export function ClaimActions({ bounty }: { bounty: BountyDetail }) {
           <Button
             className="w-full"
             disabled={!prUrl || submitPr.isPending}
-            onClick={() =>
-              submitPr.mutate(prUrl, {
-                onSuccess: () =>
-                  toast.success(
-                    "Pull request submitted",
-                    "Escrow releases when it's merged.",
-                  ),
-                onError: (e) => toast.error("Couldn't submit", errMsg(e)),
-              })
-            }
+            onClick={() => doSubmit(false)}
           >
             {submitPr.isPending ? (
               <Spinner />
@@ -120,6 +129,31 @@ export function ClaimActions({ bounty }: { bounty: BountyDetail }) {
             )}
             Submit pull request
           </Button>
+          {mismatch !== null && (
+            <div className="rounded-lg border border-danger/40 bg-danger/5 p-3 text-xs">
+              <p className="font-medium text-danger">
+                This pull request looks like it&apos;s for a different issue.
+              </p>
+              <p className="mt-1 text-muted-foreground">
+                This bounty is for issue #{mismatch}. A merge only pays out if the PR
+                addresses that issue — submitting anyway won&apos;t earn the reward
+                unless it does.
+              </p>
+              <div className="mt-2 flex gap-2">
+                <Button
+                  variant="danger"
+                  size="sm"
+                  disabled={submitPr.isPending}
+                  onClick={() => doSubmit(true)}
+                >
+                  Submit anyway
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setMismatch(null)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
           <Button
             variant="ghost"
             className="w-full text-muted-foreground"

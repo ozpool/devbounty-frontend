@@ -23,7 +23,8 @@ export function useBountyActions(bountyId: string) {
     onSuccess: invalidate,
   });
   const submitPr = useMutation({
-    mutationFn: (prUrl: string) => bountiesApi.submitPr(bountyId, prUrl),
+    mutationFn: (vars: { prUrl: string; confirmMismatch?: boolean }) =>
+      bountiesApi.submitPr(bountyId, vars.prUrl, vars.confirmMismatch),
     onSuccess: invalidate,
   });
 
