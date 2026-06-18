@@ -10,6 +10,7 @@ import { AmbientBackground } from "@/components/layout/ambient-background";
 import { WrongNetworkBanner } from "@/components/wallet/wrong-network-banner";
 import { Toaster } from "@/components/ui/toast";
 import { GithubLinkToast } from "@/components/auth/github-link-toast";
+import { GithubLinkBridge } from "@/components/auth/github-link-bridge";
 import { DemoBadge } from "@/components/demo-badge";
 import { env } from "@/lib/env";
 import { cn } from "@/lib/utils";
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Suspense fallback={null}>
             <GithubLinkToast />
           </Suspense>
+          <GithubLinkBridge />
           {env.demoMode && <DemoBadge />}
         </Providers>
       </body>
