@@ -3,17 +3,16 @@
 import { Github } from "lucide-react";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { authApi } from "@/lib/api";
+import { openGithubOAuth } from "@/lib/github-oauth";
 
-/** Full-page redirect into the backend GitHub OAuth linking flow. Forces
- *  GitHub's account chooser so the user picks/confirms the account to link
- *  rather than silently reusing whichever session the browser holds. */
+/** Opens the backend GitHub OAuth linking flow in a new tab (falling back to a
+ *  same-tab redirect if the browser blocks the popup). Forces GitHub's account
+ *  chooser so the user picks/confirms the account to link. */
 export function GithubLinkButton(props: ButtonProps) {
   return (
     <Button
       variant="outline"
-      onClick={() => {
-        window.location.href = authApi.githubStartUrl({ switch: true });
-      }}
+      onClick={() => openGithubOAuth(authApi.githubStartUrl({ switch: true }))}
       {...props}
     >
       <Github className="h-4 w-4" />

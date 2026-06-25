@@ -17,9 +17,21 @@ const securityHeaders = [
   },
 ];
 
+// Same-site API proxy. The frontend (vercel.app) and backend (onrender.com) are
+// different sites, so the session cookie would be a third-party cookie — which
+// Brave/Safari block and Chrome is phasing out, breaking cookie auth. Proxying
+// the API under our own origin makes that cookie first-party, so login and the
+// GitHub OAuth navigation work in every browser. Override the target per
+// environment with BACKEND_ORIGIN; defaults to the deployed Render service.
+const BACKEND_ORIGIN =
+  process.env.BACKEND_ORIGIN || "https://devbounty-backend.onrender.com";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async rewrites() {
+    return [{ source: "/api/:path*", destination: `${BACKEND_ORIGIN}/:path*` }];
+  },
   // Compile only the icons/components actually used from these large libraries
   // instead of the whole package — faster dev compiles and a smaller build.
   experimental: {
