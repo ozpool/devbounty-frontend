@@ -15,6 +15,7 @@ const LINKS = [
   { href: "/bounties", label: "Bounties" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/me", label: "Dashboard" },
+  { href: "/whitepaper", label: "Docs" },
 ];
 
 export function Navbar() {
