@@ -4,7 +4,12 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Logo } from "@/components/brand/logo";
-import { broadcastGithubLink, type GithubLinkStatus } from "@/lib/github-oauth";
+import {
+  broadcastGithubLink,
+  takeGithubReturn,
+  type GithubLinkStatus,
+} from "@/lib/github-oauth";
+import { safeNextPath } from "@/lib/utils";
 
 /**
  * Landing page for the GitHub OAuth tab. The backend redirects here after the
@@ -38,9 +43,13 @@ function CompleteInner() {
     }
     requestAnimationFrame(() => {
       if (window.closed) return;
+      // Return to the page the flow started on; fall back to the dashboard when
+      // there's nothing remembered (e.g. a popup that couldn't self-close).
+      const target = safeNextPath(takeGithubReturn(), "/dashboard");
       const q = new URLSearchParams({ github: status });
       if (reason) q.set("reason", reason);
-      router.replace(`/dashboard?${q.toString()}`);
+      const sep = target.includes("?") ? "&" : "?";
+      router.replace(`${target}${sep}${q.toString()}`);
     });
   }, [githubParam, status, reason, router]);
 
@@ -52,8 +61,8 @@ function CompleteInner() {
           {!githubParam
             ? "Nothing to finish here."
             : status === "linked"
-              ? "GitHub linked. Returning you to the dashboard…"
-              : "Finishing up. Returning you to the dashboard…"}
+              ? "GitHub linked. Taking you back to where you left off…"
+              : "Finishing up. Taking you back to where you left off…"}
         </p>
         <Link
           href="/dashboard"

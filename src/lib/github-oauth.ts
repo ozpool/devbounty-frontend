@@ -18,6 +18,38 @@ export const OAUTH_CHANNEL = "devbounty-github-oauth";
 /** Reused so repeated clicks reuse the same tab instead of stacking new ones. */
 export const OAUTH_WINDOW_NAME = "devbounty-github-oauth";
 
+/**
+ * Where to send the user back to once the flow finishes. The popup path keeps
+ * the origin tab where it is, but the same-tab fallback navigates away — so we
+ * stash the page the flow started on and return there instead of a fixed
+ * `/dashboard`. sessionStorage is per-tab and per-origin and survives the
+ * cross-origin hop to GitHub and back, so the value is still here on return.
+ */
+const OAUTH_RETURN_KEY = "devbounty-github-oauth-return";
+
+/** Remember the page the link flow started on (call before leaving for GitHub). */
+export function rememberGithubReturn(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const here = window.location.pathname + window.location.search;
+    window.sessionStorage.setItem(OAUTH_RETURN_KEY, here);
+  } catch {
+    // sessionStorage can throw in private modes — the /dashboard fallback covers it.
+  }
+}
+
+/** Read and clear the remembered return path. Returns null when none is stored. */
+export function takeGithubReturn(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const value = window.sessionStorage.getItem(OAUTH_RETURN_KEY);
+    window.sessionStorage.removeItem(OAUTH_RETURN_KEY);
+    return value;
+  } catch {
+    return null;
+  }
+}
+
 export type GithubLinkStatus = "linked" | "error";
 
 export interface GithubLinkResult {
@@ -62,6 +94,7 @@ export function broadcastGithubLink(result: GithubLinkResult): void {
  * completes — that path lands back on the dashboard via a query param.
  */
 export function openGithubOAuth(url: string): void {
+  rememberGithubReturn();
   const win = window.open(url, OAUTH_WINDOW_NAME);
   if (!win) {
     window.location.href = url;
