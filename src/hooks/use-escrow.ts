@@ -1,10 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { BaseError, parseUnits, UserRejectedRequestError } from "viem";
-import { useAccount, usePublicClient, useWriteContract } from "wagmi";
+import {
+  BaseError,
+  formatUnits,
+  parseUnits,
+  UserRejectedRequestError,
+  WaitForTransactionReceiptTimeoutError,
+  type PublicClient,
+} from "viem";
+import { arbitrumSepolia } from "viem/chains";
+import { useAccount, useChainId, usePublicClient, useWriteContract } from "wagmi";
 import { escrowContract, usdcContract, USDC_DECIMALS } from "@/lib/contracts";
 import { clampFees } from "@/lib/fees";
+import { decodeEscrowError, EscrowError } from "@/lib/escrow-errors";
 
 export type FundStep = "idle" | "approving" | "creating" | "done";
 
@@ -12,6 +21,9 @@ export type FundStep = "idle" | "approving" | "creating" | "done";
 // between estimate and mining (e.g. a storage slot going zero->nonzero costs
 // more). Without headroom an exact estimate can revert out-of-gas.
 const GAS_LIMIT_BUFFER_PERCENT = 25n;
+// Stop waiting on a receipt after this long so a stuck tx surfaces a message
+// instead of spinning forever.
+const RECEIPT_TIMEOUT_MS = 120_000;
 
 const withGasBuffer = (estimate: bigint): bigint =>
   (estimate * (100n + GAS_LIMIT_BUFFER_PERCENT)) / 100n;
@@ -25,23 +37,72 @@ export function isUserRejection(e: unknown): boolean {
   return e instanceof UserRejectedRequestError;
 }
 
+/** Wait for one confirmation, but turn a stuck tx into a clear message. */
+async function awaitReceipt(client: PublicClient, hash: `0x${string}`): Promise<void> {
+  try {
+    await client.waitForTransactionReceipt({ hash, timeout: RECEIPT_TIMEOUT_MS });
+  } catch (e) {
+    if (e instanceof WaitForTransactionReceiptTimeoutError) {
+      throw new EscrowError(
+        `The transaction was submitted but hasn't confirmed yet. Check your wallet - tx ${hash.slice(0, 10)}…`,
+      );
+    }
+    throw e;
+  }
+}
+
+/** Convert any thrown error into a user-facing one where we can, else rethrow. */
+function asUserFacing(e: unknown): unknown {
+  if (isUserRejection(e) || e instanceof EscrowError) return e;
+  const decoded = decodeEscrowError(e);
+  return decoded ? new EscrowError(decoded) : e;
+}
+
+/** Reject early when the wallet is on the wrong chain. */
+function assertOnArbitrumSepolia(chainId: number): void {
+  if (chainId !== arbitrumSepolia.id) {
+    throw new EscrowError(
+      "You're on the wrong network. Switch your wallet to Arbitrum Sepolia and try again.",
+    );
+  }
+}
+
 /**
  * Approve (only if allowance is short) then create the bounty on the escrow.
- * Each write waits for one confirmation before moving on. Throws if the escrow
- * isn't configured yet — callers gate on `isEscrowConfigured`.
+ * Pre-flight checks (chain, USDC balance) and revert decoding mean each failure
+ * surfaces a specific reason. Throws if the escrow isn't configured yet.
  */
 export function useFundBounty() {
   const { writeContractAsync } = useWriteContract();
   const client = usePublicClient();
   const { address } = useAccount();
+  const chainId = useChainId();
   const [step, setStep] = React.useState<FundStep>("idle");
 
   const fund = async (bountyId: `0x${string}`, amountUsdc: string) => {
-    if (!escrowContract) throw new Error("Escrow contract is not configured.");
-    if (!address || !client) throw new Error("Connect a wallet first.");
+    if (!escrowContract) throw new EscrowError("The escrow contract is not configured.");
+    if (!address || !client) throw new EscrowError("Connect your wallet first.");
+    assertOnArbitrumSepolia(chainId);
 
-    const amount = parseUnits(amountUsdc, USDC_DECIMALS);
+    let amount: bigint;
     try {
+      amount = parseUnits(amountUsdc, USDC_DECIMALS);
+    } catch {
+      throw new EscrowError("Enter a USDC amount with at most 6 decimal places.");
+    }
+
+    try {
+      const balance = await client.readContract({
+        ...usdcContract,
+        functionName: "balanceOf",
+        args: [address],
+      });
+      if (balance < amount) {
+        throw new EscrowError(
+          `Not enough USDC. This bounty needs ${amountUsdc} but your wallet holds ${formatUnits(balance, USDC_DECIMALS)}.`,
+        );
+      }
+
       const allowance = await client.readContract({
         ...usdcContract,
         functionName: "allowance",
@@ -67,7 +128,7 @@ export function useFundBounty() {
           gas: approveGas,
           ...clampFees(await client.estimateFeesPerGas()),
         });
-        await client.waitForTransactionReceipt({ hash: approveHash });
+        await awaitReceipt(client, approveHash);
       }
 
       setStep("creating");
@@ -88,13 +149,13 @@ export function useFundBounty() {
         gas: createGas,
         ...clampFees(await client.estimateFeesPerGas()),
       });
-      await client.waitForTransactionReceipt({ hash: createHash });
+      await awaitReceipt(client, createHash);
 
       setStep("done");
       return createHash;
     } catch (e) {
       setStep("idle");
-      throw e;
+      throw asUserFacing(e);
     }
   };
 
@@ -106,11 +167,13 @@ export function useRefundBounty() {
   const { writeContractAsync } = useWriteContract();
   const client = usePublicClient();
   const { address } = useAccount();
+  const chainId = useChainId();
   const [isPending, setPending] = React.useState(false);
 
   const refund = async (bountyId: `0x${string}`) => {
-    if (!escrowContract) throw new Error("Escrow contract is not configured.");
-    if (!address || !client) throw new Error("Connect a wallet first.");
+    if (!escrowContract) throw new EscrowError("The escrow contract is not configured.");
+    if (!address || !client) throw new EscrowError("Connect your wallet first.");
+    assertOnArbitrumSepolia(chainId);
     setPending(true);
     try {
       const refundGas = withGasBuffer(
@@ -128,8 +191,10 @@ export function useRefundBounty() {
         gas: refundGas,
         ...clampFees(await client.estimateFeesPerGas()),
       });
-      await client.waitForTransactionReceipt({ hash });
+      await awaitReceipt(client, hash);
       return hash;
+    } catch (e) {
+      throw asUserFacing(e);
     } finally {
       setPending(false);
     }

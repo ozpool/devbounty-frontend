@@ -1,12 +1,19 @@
 /**
- * BountyEscrow ABI (subset the frontend needs). Mirrors the contract surface in
- * ARCHITECTURE.md §8. Replace with the synced artifact ABI once the contract is
- * deployed (see scripts/sync-abi per the spec).
+ * BountyEscrow ABI (subset the frontend needs). Mirrors the deployed contract
+ * surface in contracts/contracts/BountyEscrow.sol.
  *
  * The frontend only calls maintainer-signed methods: `create` and `refund`.
- * `release` is backend-signed and never invoked here.
+ * `release` is backend-signed and never invoked here. The `error` entries let
+ * viem decode custom-error reverts into readable reasons (see escrow-errors.ts).
  */
 export const bountyEscrowAbi = [
+  { type: "error", name: "NotAuthorized", inputs: [] },
+  { type: "error", name: "BountyExists", inputs: [] },
+  { type: "error", name: "BountyNotOpen", inputs: [] },
+  { type: "error", name: "ZeroAmount", inputs: [] },
+  { type: "error", name: "AmountTooLarge", inputs: [] },
+  { type: "error", name: "RefundTooEarly", inputs: [] },
+  { type: "error", name: "NotMaintainer", inputs: [] },
   {
     type: "function",
     name: "create",

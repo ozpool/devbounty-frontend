@@ -7,6 +7,7 @@ import { Info, Trash2, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { isUserRejection, useRefundBounty } from "@/hooks/use-escrow";
+import { EscrowError } from "@/lib/escrow-errors";
 import { bountiesApi, ApiError } from "@/lib/api";
 import { isEscrowConfigured } from "@/lib/contracts";
 import { timeAgo } from "@/lib/utils";
@@ -113,7 +114,9 @@ export function MaintainerPanel({ bounty }: { bounty: BountyDetail }) {
       } else {
         toast.error(
           "Refund failed",
-          e instanceof ApiError ? e.message : "The transaction failed.",
+          e instanceof EscrowError || e instanceof ApiError
+            ? e.message
+            : "The transaction failed.",
         );
       }
     } finally {
@@ -149,6 +152,11 @@ export function MaintainerPanel({ bounty }: { bounty: BountyDetail }) {
           {!eligible && elig.data?.windowExpiresAt && (
             <p className="mt-2 text-xs text-muted-foreground">
               Refundable {timeAgo(elig.data.windowExpiresAt)}.
+            </p>
+          )}
+          {elig.isError && (
+            <p className="mt-2 text-xs text-danger">
+              Couldn&apos;t check refund eligibility. Reload the page to try again.
             </p>
           )}
         </>
