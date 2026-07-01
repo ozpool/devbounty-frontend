@@ -1,6 +1,6 @@
 <div align="center">
 
-# DevBounty — Frontend
+# DevBounty - Frontend
 
 **The web app for a decentralized bug-bounty platform.**
 Connect a wallet, fund bounties in USDC, get paid automatically when your fix is merged.
@@ -11,7 +11,7 @@ Connect a wallet, fund bounties in USDC, get paid automatically when your fix is
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](.)
 [![wagmi](https://img.shields.io/badge/wagmi-v2-1C1B1B?style=flat-square)](.)
 [![Tailwind](https://img.shields.io/badge/Tailwind-CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](.)
-[![Tests](https://img.shields.io/badge/tests-28%20passing-0fa56a?style=flat-square)](#testing)
+[![Tests](https://img.shields.io/badge/tests-34%20passing-0fa56a?style=flat-square)](#testing)
 [![Status](https://img.shields.io/badge/status-testnet-blueviolet?style=flat-square)](#status)
 
 </div>
@@ -24,7 +24,7 @@ DevBounty lets a project owner put real money behind a bug report without trusti
 A sponsor funds a bounty in **USDC** held by an on-chain escrow; a hunter fixes the issue and opens
 a pull request; when a maintainer merges it, the escrow releases the funds on-chain.
 
-This repository is the **frontend** — the interface sponsors and hunters use to connect a wallet,
+This repository is the **frontend** - the interface sponsors and hunters use to connect a wallet,
 browse and fund bounties, claim work, and track payouts and reputation. It is read-and-act UI only:
 it never holds funds or decides payouts. It reads the chain, talks to the backend API, and prompts
 the wallet to sign. The API and the smart contract live in a separate repository.
@@ -34,7 +34,7 @@ the wallet to sign. The API and the smart contract live in a separate repository
 ## Capabilities
 
 - **Wallet identity.** Connect a wallet and sign in with Ethereum (SIWE), then link a GitHub
-  account — both required before claiming, with session state kept in a httpOnly cookie.
+  account - both required before claiming, with session state kept in a httpOnly cookie.
 - **Browse & fund.** A filterable, paginated bounty board, and a guided wizard to create a bounty
   and fund it with an on-chain USDC `approve` + escrow `create`.
 - **Claim to payout.** Claim a bounty, attach a pull request, and follow its status through to a
@@ -52,11 +52,22 @@ the wallet to sign. The API and the smart contract live in a separate repository
 
 | Capability | State | What it needs |
 |---|---|---|
-| UI (board, detail, create, profiles, leaderboard, dashboard) | Built · 28 tests green | — |
-| Wallet login (SIWE) + GitHub linking | Built against the API | — |
-| On-chain funding (USDC approve + escrow create) | Wired, gated on the escrow address | escrow deployed + address set |
-| Hosted on the internet | Not deployed yet | Vercel deploy + env |
+| UI (board, detail, create, profiles, leaderboard, dashboard) | Built · 34 tests green | - |
+| Wallet login (SIWE) + GitHub linking | Built against the API | - |
+| On-chain funding (USDC approve + escrow create) | Live on Arbitrum Sepolia | - |
+| Hosted on the internet | Live on Vercel | - |
 | Real money | Test USDC only | mainnet escrow + audit |
+
+---
+
+## Deployed contracts
+
+Live and source-verified on **Arbitrum Sepolia** (testnet):
+
+| Contract | Address |
+|---|---|
+| BountyEscrow | [`0x8B71467B545aEdC0F4fc2094c46efEe2CB47Da9F`](https://sepolia.arbiscan.io/address/0x8B71467B545aEdC0F4fc2094c46efEe2CB47Da9F#code) |
+| USDC (mock) | [`0x3FD372BF3AE46539e5F07D9Bc00c2E5dfA0F0E2e`](https://sepolia.arbiscan.io/address/0x3FD372BF3AE46539e5F07D9Bc00c2E5dfA0F0E2e#code) |
 
 ---
 
@@ -99,7 +110,7 @@ flowchart LR
 ```
 
 The frontend reads bounty data from the API and reads or writes the chain through the user's
-wallet. It carries no secrets — all client config is `NEXT_PUBLIC_*`.
+wallet. It carries no secrets - all client config is `NEXT_PUBLIC_*`.
 
 ---
 
@@ -120,7 +131,7 @@ The API is expected at `http://localhost:4000` by default (cookie auth, sent aut
 ```bash
 pnpm typecheck
 pnpm lint
-pnpm test       # 28 tests (Vitest + React Testing Library)
+pnpm test       # 34 tests (Vitest + React Testing Library)
 pnpm build
 ```
 
