@@ -11,9 +11,13 @@ export const env = {
   /** Override the public RPC (rate-limited) before on-chain reads go live. */
   rpcUrl: process.env.NEXT_PUBLIC_RPC_URL || "",
   chainId: Number(process.env.NEXT_PUBLIC_CHAIN_ID || 421614),
+  // Defaults are the live Arbitrum Sepolia deployment, so a build with no env
+  // set (e.g. a fresh Vercel deploy) still targets the real contracts. Set the
+  // NEXT_PUBLIC_* vars to point at a different deployment.
   usdcAddress: (process.env.NEXT_PUBLIC_USDC_ADDRESS ||
-    "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d") as `0x${string}`,
-  escrowAddress: (process.env.NEXT_PUBLIC_ESCROW_ADDRESS || "") as `0x${string}` | "",
+    "0x3FD372BF3AE46539e5F07D9Bc00c2E5dfA0F0E2e") as `0x${string}`,
+  escrowAddress: (process.env.NEXT_PUBLIC_ESCROW_ADDRESS ||
+    "0x8B71467B545aEdC0F4fc2094c46efEe2CB47Da9F") as `0x${string}` | "",
   githubClientId: process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID || "",
   sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN || "",
   /** Serve seeded dummy data instead of calling the API (deployable without a backend). */

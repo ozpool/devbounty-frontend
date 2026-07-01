@@ -56,8 +56,8 @@ export function MaintainerPanel({ bounty }: { bounty: BountyDetail }) {
     return (
       <Wrap>
         <p className="text-sm text-muted-foreground">
-          This bounty hasn&apos;t been funded yet. You can cancel it to remove it from the
-          board — no USDC was charged.
+          This bounty hasn&apos;t been funded yet. You can cancel it to remove it from
+          the board — no USDC was charged.
         </p>
         <Button
           variant="outline"
@@ -72,13 +72,13 @@ export function MaintainerPanel({ bounty }: { bounty: BountyDetail }) {
     );
   }
 
-  // Contract not deployed yet — funding/refund happen on-chain from the wallet.
+  // Fallback only if no escrow address is configured for this build.
   if (!isEscrowConfigured) {
     return (
       <Wrap>
         <p className="text-sm text-muted-foreground">
-          Funding and refunds are signed from your wallet on-chain. The escrow contract
-          isn&apos;t deployed yet, so those actions unlock once it is.
+          Funding and refunds are signed from your wallet on-chain. No escrow contract
+          is configured for this build, so those actions are unavailable here.
         </p>
         <div className="mt-4 flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
           <Info className="h-3.5 w-3.5" />

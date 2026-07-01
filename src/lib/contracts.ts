@@ -5,7 +5,7 @@ import { env, isEscrowConfigured } from "./env";
 /** USDC (Circle native) uses 6 decimals on Arbitrum. */
 export const USDC_DECIMALS = 6;
 
-/** Null until an escrow address is configured (contract-deferred phase). */
+/** The deployed BountyEscrow, or null if no valid escrow address is configured. */
 export const escrowContract = isEscrowConfigured
   ? ({ address: env.escrowAddress as `0x${string}`, abi: bountyEscrowAbi } as const)
   : null;
