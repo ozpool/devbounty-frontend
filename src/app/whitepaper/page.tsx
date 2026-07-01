@@ -6,7 +6,7 @@ import { WpTocRail } from "@/components/whitepaper/wp-toc-rail";
 import { SECTIONS } from "./content";
 
 export const metadata: Metadata = {
-  title: "Docs — DevBounty White Paper",
+  title: "Docs - DevBounty White Paper",
   description:
     "The DevBounty white paper: a decentralized bug-bounty platform where USDC escrow and a GitHub merge replace the trusted payout custodian.",
 };
@@ -32,7 +32,7 @@ export default function WhitePaperPage() {
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
           How DevBounty replaces the payout custodian with USDC escrow and a GitHub
-          merge — so a fixed bug is a paid bug, provably.
+          merge - so a fixed bug is a paid bug, provably.
         </p>
         <p className="mt-6 font-mono text-xs text-muted-foreground">
           {VERSION} · {PUBLISHED}
@@ -51,7 +51,7 @@ export default function WhitePaperPage() {
         </aside>
 
         <div className="mx-auto w-full max-w-3xl">
-          {/* Inline contents (mobile only — the rail covers desktop) */}
+          {/* Inline contents (mobile only - the rail covers desktop) */}
           <Reveal className="lg:hidden">
             <nav
               aria-label="Table of contents"

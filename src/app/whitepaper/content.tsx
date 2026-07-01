@@ -1,4 +1,20 @@
 import * as React from "react";
+import { env } from "@/lib/env";
+import { explorerAddressUrl } from "@/lib/chains";
+
+/** An on-chain address rendered as a monospace link to the block explorer. */
+function AddressLink({ address }: { address: string }) {
+  return (
+    <a
+      href={explorerAddressUrl(address)}
+      target="_blank"
+      rel="noreferrer"
+      className="break-all font-mono text-sm text-primary underline underline-offset-2 hover:text-foreground"
+    >
+      {address}
+    </a>
+  );
+}
 
 /** A labelled fact card used inside several sections. */
 function Fact({ k, v }: { k: string; v: string }) {
@@ -46,7 +62,7 @@ export const SECTIONS: WpEntry[] = [
           from the middle of every payout. Sponsors fund bounties in USDC that are held
           by a smart-contract escrow on Arbitrum, not by a company account. When a
           maintainer merges the pull request that fixes the issue, the protocol releases
-          the escrowed funds to the security researcher automatically — no invoices, no
+          the escrowed funds to the security researcher automatically - no invoices, no
           manual approval, no waiting.
         </p>
         <p>
@@ -71,10 +87,10 @@ export const SECTIONS: WpEntry[] = [
         </p>
         <Bullets
           items={[
-            "Custody risk — sponsor funds sit in a platform's bank account, exposed to freezes, insolvency, and unilateral policy changes.",
-            "Slow, opaque payouts — researchers chase invoices for weeks while a reviewer decides, off the record, whether and how much to pay.",
-            "Trust asymmetry — a researcher has no guarantee the money exists until after the work is disclosed.",
-            "Platform lock-in — reputation is trapped inside one walled garden and cannot be independently verified.",
+            "Custody risk - sponsor funds sit in a platform's bank account, exposed to freezes, insolvency, and unilateral policy changes.",
+            "Slow, opaque payouts - researchers chase invoices for weeks while a reviewer decides, off the record, whether and how much to pay.",
+            "Trust asymmetry - a researcher has no guarantee the money exists until after the work is disclosed.",
+            "Platform lock-in - reputation is trapped inside one walled garden and cannot be independently verified.",
           ]}
         />
       </>
@@ -88,8 +104,8 @@ export const SECTIONS: WpEntry[] = [
         <p>
           DevBounty replaces the trusted intermediary with an escrow contract and a
           verifiable trigger. The money is locked before a researcher lifts a finger,
-          and the act that proves the work was accepted — a maintainer merging the pull
-          request — is the same act that releases payment.
+          and the act that proves the work was accepted - a maintainer merging the pull
+          request - is the same act that releases payment.
         </p>
         <div className="grid gap-4 sm:grid-cols-3">
           <Fact
@@ -98,7 +114,7 @@ export const SECTIONS: WpEntry[] = [
           />
           <Fact
             k="Merge is the trigger"
-            v="A merged PR releases payment — no manual approval step."
+            v="A merged PR releases payment - no manual approval step."
           />
           <Fact
             k="Verifiable settlement"
@@ -117,7 +133,7 @@ export const SECTIONS: WpEntry[] = [
         <Bullets
           items={[
             "A sponsor connects a wallet and GitHub account, picks an issue, and funds a bounty with USDC into the escrow contract.",
-            "A hunter claims the bounty — subject to gating, a per-user cap, an expiry, and a cooldown — then submits a fix as a pull request.",
+            "A hunter claims the bounty - subject to gating, a per-user cap, an expiry, and a cooldown - then submits a fix as a pull request.",
             "A maintainer merges the pull request. GitHub sends a signed webhook to the API.",
             "The API verifies the webhook signature, matches the merge to the bounty and claim, and calls the escrow contract to release funds to the hunter.",
             "A chain indexer watches the contract's events and keeps the off-chain records and the leaderboard in sync.",
@@ -133,15 +149,15 @@ export const SECTIONS: WpEntry[] = [
       <>
         <p>
           The merge is a deliberately simple, binding signal. That keeps the protocol
-          trust-minimized, but the merge is not always a clean signal — so DevBounty’s
+          trust-minimized, but the merge is not always a clean signal - so DevBounty’s
           policy on each edge case is stated explicitly rather than left to discretion:
         </p>
         <Bullets
           items={[
-            "Maintainer merges a low-quality or unrelated fix — merge is final and binding by design. DevBounty does not arbitrate code quality; the repository's own maintainer is the authority on what counts as an accepted fix, exactly as in a normal pull-request review. Sponsors choose which repositories and maintainers they trust when they fund.",
-            "Maintainer refuses to merge a valid fix — there is no on-chain arbitration in this version. The claim runs to its expiry and the bounty returns to the open pool; the dispute is social, surfaced through the hunter's public record, not settled by the protocol. On-chain mediation is explicitly out of scope for now.",
-            "Claim expires without a merged PR — the claim is released automatically and the bounty becomes claimable again. No action is required and the sponsor's escrow is untouched.",
-            "Sponsor disappears mid-claim — it cannot strand a hunter. The full bounty is locked in escrow at funding time, before any claim, so the funds a merge would release are already on-chain and beyond the sponsor's unilateral control.",
+            "Maintainer merges a low-quality or unrelated fix - merge is final and binding by design. DevBounty does not arbitrate code quality; the repository's own maintainer is the authority on what counts as an accepted fix, exactly as in a normal pull-request review. Sponsors choose which repositories and maintainers they trust when they fund.",
+            "Maintainer refuses to merge a valid fix - there is no on-chain arbitration in this version. The claim runs to its expiry and the bounty returns to the open pool; the dispute is social, surfaced through the hunter's public record, not settled by the protocol. On-chain mediation is explicitly out of scope for now.",
+            "Claim expires without a merged PR - the claim is released automatically and the bounty becomes claimable again. No action is required and the sponsor's escrow is untouched.",
+            "Sponsor disappears mid-claim - it cannot strand a hunter. The full bounty is locked in escrow at funding time, before any claim, so the funds a merge would release are already on-chain and beyond the sponsor's unilateral control.",
           ]}
         />
       </>
@@ -154,15 +170,15 @@ export const SECTIONS: WpEntry[] = [
       <>
         <p>
           Software security spend keeps climbing as supply-chain and open-source
-          vulnerabilities move from edge case to headline. Crowdsourced security —
-          paying independent researchers for real findings — is the fastest-growing
+          vulnerabilities move from edge case to headline. Crowdsourced security -
+          paying independent researchers for real findings - is the fastest-growing
           slice of that spend, yet it still runs on centralized custodians and manual
           payout pipelines.
         </p>
         <p>
           The bug-bounty platform market was valued at roughly $1.5 billion in 2024 and
-          is projected to grow at about a 15% CAGR, approaching $5–6 billion by the
-          early 2030s. Established platforms — HackerOne, Bugcrowd, and Immunefi —
+          is projected to grow at about a 15% CAGR, approaching $5-6 billion by the
+          early 2030s. Established platforms - HackerOne, Bugcrowd, and Immunefi -
           process most of that volume today, but they settle in fiat or rely on managed,
           custodial payout review. Even Immunefi, the closest Web3 analog, releases
           funds through a managed process rather than non-custodial on-chain escrow.
@@ -170,7 +186,7 @@ export const SECTIONS: WpEntry[] = [
         <p>
           DevBounty’s differentiation is settlement, not sourcing: the same researcher
           pool, paid by code instead of by a back office. Web3 protocols in particular
-          need a bounty venue that is itself trust-minimized — paying in stablecoins,
+          need a bounty venue that is itself trust-minimized - paying in stablecoins,
           settling on-chain, and proving fund availability up front.
         </p>
         <p className="text-xs text-muted-foreground">
@@ -181,7 +197,7 @@ export const SECTIONS: WpEntry[] = [
             rel="noreferrer"
             className="underline underline-offset-2 hover:text-foreground"
           >
-            Global Growth Insights, Bug Bounty Platforms Market (2024–2033)
+            Global Growth Insights, Bug Bounty Platforms Market (2024-2033)
           </a>
           . Estimates vary by source; treated here as directional, not precise.
         </p>
@@ -194,16 +210,16 @@ export const SECTIONS: WpEntry[] = [
     body: (
       <>
         <p>
-          DevBounty is built so that the trust-critical step — releasing money — is
+          DevBounty is built so that the trust-critical step - releasing money - is
           owned by exactly one component and verified on-chain.
         </p>
         <Bullets
           items={[
-            "Escrow contract — a BountyEscrow contract (OpenZeppelin, deployed to Arbitrum) holds USDC and exposes a guarded release path.",
-            "API & indexer — an Express API handles auth, the bounty lifecycle, and the webhook that owns the on-chain release; a single indexer reads and syncs contract events.",
-            "Authentication — wallet-based sign-in (SIWE) issues a session; GitHub OAuth links the identity needed to attribute pull requests.",
-            "Webhook owns release — only the verified GitHub-merge webhook can trigger a payout, so a bounty can never be double-released.",
-            "Defense in depth — webhook signatures are verified, OAuth tokens are encrypted at rest (AES-256-GCM), and on-chain signer custody is hardened before production.",
+            "Escrow contract - a BountyEscrow contract (OpenZeppelin, deployed to Arbitrum) holds USDC and exposes a guarded release path.",
+            "API & indexer - an Express API handles auth, the bounty lifecycle, and the webhook that owns the on-chain release; a single indexer reads and syncs contract events.",
+            "Authentication - wallet-based sign-in (SIWE) issues a session; GitHub OAuth links the identity needed to attribute pull requests.",
+            "Webhook owns release - only the verified GitHub-merge webhook can trigger a payout, so a bounty can never be double-released.",
+            "Defense in depth - webhook signatures are verified, OAuth tokens are encrypted at rest (AES-256-GCM), and on-chain signer custody is hardened before production.",
           ]}
         />
       </>
@@ -219,12 +235,31 @@ export const SECTIONS: WpEntry[] = [
           undergone a third-party security audit. The BountyEscrow contract is unaudited
           and should be treated as experimental.
         </p>
+        <div className="ring-gradient rounded-2xl border border-border bg-card/40 p-5">
+          <p className="font-display text-sm font-semibold text-foreground">
+            Deployed contracts (Arbitrum Sepolia, source-verified)
+          </p>
+          <dl className="mt-3 space-y-2 text-sm">
+            <div className="flex flex-col gap-0.5 sm:flex-row sm:justify-between sm:gap-4">
+              <dt className="text-muted-foreground">BountyEscrow</dt>
+              <dd>
+                <AddressLink address={env.escrowAddress || ""} />
+              </dd>
+            </div>
+            <div className="flex flex-col gap-0.5 sm:flex-row sm:justify-between sm:gap-4">
+              <dt className="text-muted-foreground">USDC (mock)</dt>
+              <dd>
+                <AddressLink address={env.usdcAddress} />
+              </dd>
+            </div>
+          </dl>
+        </div>
         <Bullets
           items={[
-            "Testnet only — the live deployment uses a mock USDC token, not real funds, so nothing of monetary value is currently at risk.",
-            "Unaudited — a formal audit by a recognized smart-contract auditor is planned ahead of any mainnet deployment (see Phase 4 of the roadmap).",
-            "Experimental — do not treat the contract as production-grade; do not fund bounties with money you cannot afford to lose once real funds are supported.",
-            "Reporting — vulnerabilities in the contract or API can be reported privately through the project's GitHub issues.",
+            "Testnet only - the live deployment uses a mock USDC token, not real funds, so nothing of monetary value is currently at risk.",
+            "Unaudited - a formal audit by a recognized smart-contract auditor is planned ahead of any mainnet deployment.",
+            "Experimental - do not treat the contract as production-grade; do not fund bounties with money you cannot afford to lose once real funds are supported.",
+            "Reporting - vulnerabilities in the contract or API can be reported privately through the project's GitHub issues.",
           ]}
         />
       </>
@@ -242,9 +277,9 @@ export const SECTIONS: WpEntry[] = [
         </p>
         <Bullets
           items={[
-            "Stablecoin settlement — bounties are denominated and paid in USDC, removing volatility from the reward.",
-            "Reputation from real payouts — a hunter's standing is computed from merged, paid fixes, so it cannot be inflated by unverifiable claims.",
-            "Public, portable record — profiles and the leaderboard expose that on-chain history for anyone to verify.",
+            "Stablecoin settlement - bounties are denominated and paid in USDC, removing volatility from the reward.",
+            "Reputation from real payouts - a hunter's standing is computed from merged, paid fixes, so it cannot be inflated by unverifiable claims.",
+            "Public, portable record - profiles and the leaderboard expose that on-chain history for anyone to verify.",
           ]}
         />
       </>
@@ -262,38 +297,12 @@ export const SECTIONS: WpEntry[] = [
           mechanism rather than baking in a fee before the model is justified.
         </p>
         <p>
-          A fee model will be proposed before mainnet (see the roadmap). The intended
-          shape is a small percentage taken only at settlement — on a successful, paid
-          resolution — with no fee on funding or claiming, so the protocol earns only
+          A fee model will be proposed before mainnet. The intended
+          shape is a small percentage taken only at settlement - on a successful, paid
+          resolution - with no fee on funding or claiming, so the protocol earns only
           when a researcher actually gets paid. Any such fee, its rate, and where it is
           routed will be published before it is enabled.
         </p>
-      </>
-    ),
-  },
-  {
-    id: "roadmap",
-    title: "Roadmap",
-    body: (
-      <>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Fact
-            k="Phase 1 — Foundations · Complete"
-            v="Wallet auth, GitHub linking, and the bounty lifecycle data model."
-          />
-          <Fact
-            k="Phase 2 — Escrow · Testnet complete"
-            v="BountyEscrow on Arbitrum Sepolia and the webhook-owned release path — testnet only, with a mock USDC token."
-          />
-          <Fact
-            k="Phase 3 — Indexer & reputation · In progress"
-            v="Event indexing, on-chain payout sync, public profiles, and the leaderboard."
-          />
-          <Fact
-            k="Phase 4 — Hardening & mainnet · Planned"
-            v="Third-party audit, production signer custody (KMS/HSM), horizontal API scaling, and mainnet deployment."
-          />
-        </div>
       </>
     ),
   },
@@ -311,7 +320,7 @@ export const SECTIONS: WpEntry[] = [
         </p>
         <p>
           The design intentionally minimizes how much trust that team requires. The
-          contract holds the funds, a verified merge — not a person — triggers each
+          contract holds the funds, a verified merge - not a person - triggers each
           payout, and every settlement is public. Governance follows least privilege:
           the one component that can move money is isolated and auditable, signer
           custody is documented and progressively hardened (an environment key on
