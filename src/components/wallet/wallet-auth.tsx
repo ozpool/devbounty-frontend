@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/toast";
 import { useSiweLogin } from "@/hooks/use-siwe-login";
+import { isUserRejection } from "@/hooks/use-escrow";
+import { ApiError } from "@/lib/api";
 import { useSessionStore } from "@/store/session";
 import { env } from "@/lib/env";
 import { demoAuth } from "@/lib/demo/auth";
@@ -50,7 +52,18 @@ export function WalletAuth() {
   const signIn = () =>
     login.mutate(undefined, {
       onSuccess: () => toast.success("Signed in"),
-      onError: () => toast.error("Sign-in failed", "The signature was rejected."),
+      onError: (e) => {
+        if (isUserRejection(e)) {
+          toast.info("Sign-in cancelled", "You dismissed the signature request.");
+        } else {
+          toast.error(
+            "Sign-in failed",
+            e instanceof ApiError
+              ? e.message
+              : "Something went wrong signing in. Please try again.",
+          );
+        }
+      },
     });
 
   return (

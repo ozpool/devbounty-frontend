@@ -69,16 +69,24 @@ export async function apiFetch<T>(path: string, options: ApiOptions = {}): Promi
 
   if (env.demoMode) return demoFetch<T>(path, query, rest.method, body);
 
-  const res = await fetch(buildUrl(path, query), {
-    credentials: "include",
-    headers: {
-      Accept: "application/json",
-      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-      ...headers,
-    },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-    ...rest,
-  });
+  let res: Response;
+  try {
+    res = await fetch(buildUrl(path, query), {
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...headers,
+      },
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+      ...rest,
+    });
+  } catch {
+    // fetch only rejects on a network-level failure (offline, DNS, CORS, server
+    // unreachable), never on a 4xx/5xx. Surface that as connectivity, not a
+    // generic "something went wrong".
+    throw new ApiError(0, "Can't reach the server. Check your connection and try again.");
+  }
 
   const isJson = res.headers.get("content-type")?.includes("application/json");
   const payload = isJson ? await res.json().catch(() => null) : null;
