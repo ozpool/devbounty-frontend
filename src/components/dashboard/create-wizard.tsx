@@ -8,6 +8,7 @@ import { Input, Select } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/toast";
 import { isUserRejection, useFundBounty } from "@/hooks/use-escrow";
+import { EscrowError } from "@/lib/escrow-errors";
 import { bountiesApi, ApiError } from "@/lib/api";
 import { isEscrowConfigured } from "@/lib/contracts";
 import { fetchRepoId } from "@/lib/github";
@@ -148,7 +149,7 @@ export function CreateWizard() {
       } else {
         toast.error(
           "Funding failed",
-          e instanceof ApiError
+          e instanceof EscrowError || e instanceof ApiError
             ? e.message
             : "The deposit didn't go through and no USDC was charged. Please try again.",
         );
